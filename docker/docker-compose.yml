@@ -1,0 +1,15 @@
+version: '3'
+
+services: 
+  nginx:
+    image: nginx
+    ports: 
+      - '9001:80'
+    expose:
+      - 80
+  haproxy:
+    build: ./haproxy
+    ports:
+      - '9000:80'
+    expose:
+      - 80
