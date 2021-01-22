@@ -2,8 +2,6 @@ FROM haproxytech/haproxy-debian
 RUN mkdir /run/haproxy/
 RUN adduser haproxy haproxy
 
-COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
-
 RUN apt update && apt install -y unzip build-essential wget libssl-dev
 
 RUN set -ex \
@@ -62,5 +60,6 @@ RUN luarocks install luaossl \
 
 WORKDIR /webqueue
 
+COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
 COPY ./webqueue/ /webqueue/
 CMD ["haproxy", "-d", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
