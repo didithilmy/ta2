@@ -24,7 +24,7 @@
 local jwt = {}
 
 local json = require 'json'
-local base64 = require 'base64'
+local base64 = require 'utils.base64'
 local openssl = {
     pkey = require 'openssl.pkey',
     digest = require 'openssl.digest',
@@ -33,7 +33,7 @@ local openssl = {
 }
 
 local function log(msg)
-    core.Debug(tostring(msg))
+    -- core.Debug(tostring(msg))
 end
 
 local function dump(o)

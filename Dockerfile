@@ -62,4 +62,4 @@ WORKDIR /webqueue
 
 COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
 COPY ./webqueue/ /webqueue/
-CMD ["haproxy", "-d", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
+CMD ["haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
