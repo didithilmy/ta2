@@ -23,9 +23,15 @@ local function monitoring_daemon()
         core.msleep(TICK_DURATION_MS)
         local average = calc_average(webqueue_recorded_response_times)
         local median = stats.median(webqueue_recorded_response_times)
+        local q3 = stats.q3(webqueue_recorded_response_times)
+        local max, min = stats.maxmin(webqueue_recorded_response_times)
+
         local no_of_sessions = #webqueue_recorded_response_times
+
         webqueue_recorded_response_times = {}
-        core.Info('Sessions: ' .. no_of_sessions .. ', Average response time: ' .. average .. ', Median: ' .. median)
+
+        core.Info('Sessions: ' .. no_of_sessions .. ', Average response time: ' .. average .. ', Median: ' .. median ..
+                      ', Q3: ' .. q3 .. ', Max: ' .. max .. ', Min: ' .. min)
     end
 end
 

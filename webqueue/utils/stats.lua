@@ -81,6 +81,26 @@ function stats.median(t)
     end
 end
 
+function stats.q3(t)
+    local temp = {}
+
+    -- deep copy table so that when we sort it, the original is unchanged
+    -- also weed out any non numbers
+    for k, v in pairs(t) do
+        if type(v) == 'number' then
+            table.insert(temp, v)
+        end
+    end
+
+    if (#temp == 0) then
+        return 0
+    end
+
+    table.sort(temp)
+
+    return temp[math.ceil(#temp * 3 / 4)]
+end
+
 -- Get the standard deviation of a table
 function stats.standardDeviation(t)
     local m
