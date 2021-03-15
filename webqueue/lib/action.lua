@@ -19,6 +19,7 @@ core.register_action("webqueue_token_checker", {'http-req'}, function(txn)
 
     local token = txn.sf:req_cook(WEBQUEUE_TICKET_COOKIE_NAME)
     local actual_session_id = txn.sf:req_cook(WEBQUEUE_SESSION_COOKIE_NAME)
+    txn:set_var("txn.actual_session_id", actual_session_id)
 
     local payload = jwt.jwtverify(token, 'secret')
 
@@ -54,20 +55,34 @@ end, 0)
 
 core.register_action("webqueue_token_issuer", {'http-res'}, function(txn)
     local should_issue_entry = txn:get_var("txn.should_issue_entry")
+    local actual_session_id = txn:get_var("txn.actual_session_id")
+
     if should_issue_entry == 1 then
         core.Debug("[!] Issuing entry token")
-        local jwt_value = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaWQiOiIxMjMiLCJxbm8iOjEsInR5cCI6ImUiLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MTcwMDAwMDAwMH0.hOe8wKVkmgZ_-syrxmC59cChm_ZuPxAt4gnqoUwCwP4"
-        txn.http:res_add_header('Set-Cookie', WEBQUEUE_TICKET_COOKIE_NAME.."="..jwt_value)
+        local exp = core.now().sec + WEBQUEUE_ENTRY_TICKET_EXPIRY_SECS
+        local payload = {
+            typ = "e",
+            sid = actual_session_id,
+            exp = exp
+        }
+        local jwt_value = jwt.sign(payload, "secret")
+        txn.http:res_add_header('Set-Cookie', WEBQUEUE_TICKET_COOKIE_NAME .. "=" .. jwt_value)
     end
 
     local should_issue_queue = txn:get_var("txn.should_issue_queue")
     if should_issue_queue == 1 then
         core.Debug("[!] Issuing queue token")
-        local jwt_value = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaWQiOiIxMjMiLCJxbm8iOjEsInR5cCI6InEiLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MTcwMDAwMDAwMH0.PEBWuCEdMH_pQrzSy_0p-3zgBdP-SJhSHFjaH-w7wjA"
-        txn.http:res_add_header('Set-Cookie', WEBQUEUE_TICKET_COOKIE_NAME.."="..jwt_value)
+        local queue_no = webqueue_latest_issued_queue_no + 1
+        webqueue_latest_issued_queue_no = queue_no
+        local payload = {
+            typ = "q",
+            sid = actual_session_id,
+            qno = webqueue_latest_issued_queue_no
+        }
+        local jwt_value = jwt.sign(payload, "secret")
+        txn.http:res_add_header('Set-Cookie', WEBQUEUE_TICKET_COOKIE_NAME .. "=" .. jwt_value)
     end
 end, 0)
-
 
 core.register_action("webqueue_http_request", {'http-req', 'tcp-req'}, function(txn)
     local start_tstamp = getTimestamp()

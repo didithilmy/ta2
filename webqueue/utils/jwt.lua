@@ -51,13 +51,9 @@ local function dump(o)
     end
 end
 
-local function encodeJwt(payload)
-    
-end
-
 local function decodeJwt(jwt_string)
     local headerFields = core.tokenize(jwt_string, " .")
-    
+
     log('JWT string: ' .. jwt_string)
 
     if #headerFields ~= 3 then
@@ -160,6 +156,22 @@ function jwt.jwtverify(jwt_string, hmac_secret)
     ::out::
     log("req.authorized = false")
     return false
+end
+
+function jwt.sign(payload, hmac_secret)
+    local header = {
+        alg = "HS256",
+        typ = "JWT"
+    }
+
+    local header_str = base64.encode(json.encode(header)):gsub("=", "")
+    local payload_str = base64.encode(json.encode(payload)):gsub("=", "")
+
+    local hmac = openssl.hmac.new(hmac_secret, 'SHA256')
+    local checksum = hmac:final(header_str .. '.' .. payload_str)
+    local checksum_str = base64.encode(checksum):gsub("=", "")
+
+    return header_str .. "." .. payload_str .. "." .. checksum_str
 end
 
 return jwt
