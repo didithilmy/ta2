@@ -33,7 +33,7 @@ local openssl = {
 }
 
 local function log(msg)
-    -- core.Debug(tostring(msg))
+    -- core.Debug("[JWT] "..tostring(msg))
 end
 
 local function dump(o)
@@ -51,12 +51,8 @@ local function dump(o)
     end
 end
 
-function jwt.readAll(file)
-    log("Reading file " .. file)
-    local f = assert(io.open(file, "rb"))
-    local content = f:read("*all")
-    f:close()
-    return content
+local function encodeJwt(payload)
+    
 end
 
 local function decodeJwt(jwt_string)
