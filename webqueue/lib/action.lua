@@ -21,7 +21,7 @@ core.register_action("webqueue_token_checker", {'http-req'}, function(txn)
     local actual_session_id = txn.sf:req_cook(WEBQUEUE_SESSION_COOKIE_NAME)
     txn:set_var("txn.actual_session_id", actual_session_id)
 
-    local payload = jwt.jwtverify(token, 'secret')
+    local payload = jwt.jwtverify(token, webqueue_jwt_signing_secret)
 
     if payload == false then
         txn:set_var("txn.should_issue_queue", true)
@@ -65,7 +65,7 @@ core.register_action("webqueue_token_issuer", {'http-res'}, function(txn)
             sid = actual_session_id,
             exp = exp
         }
-        local jwt_value = jwt.sign(payload, "secret")
+        local jwt_value = jwt.sign(payload, webqueue_jwt_signing_secret)
         txn.http:res_add_header('Set-Cookie', WEBQUEUE_TICKET_COOKIE_NAME .. "=" .. jwt_value)
     end
 
@@ -79,7 +79,7 @@ core.register_action("webqueue_token_issuer", {'http-res'}, function(txn)
             sid = actual_session_id,
             qno = webqueue_latest_issued_queue_no
         }
-        local jwt_value = jwt.sign(payload, "secret")
+        local jwt_value = jwt.sign(payload, webqueue_jwt_signing_secret)
         txn.http:res_add_header('Set-Cookie', WEBQUEUE_TICKET_COOKIE_NAME .. "=" .. jwt_value)
     end
 end, 0)
