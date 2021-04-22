@@ -9,6 +9,7 @@ import { Trend } from "k6/metrics";
 const ENDPOINT = "http://localhost:9001/test-post.php";
 
 const noOfLoadsTrend = new Trend("no_of_loads");
+const completionTime = new Trend("completion_time");
 
 export let options = {
   discardResponseBodies: true,
@@ -31,14 +32,20 @@ export function setup() {
 
 export default function (data) {
   sleep(randomIntBetween(1, 4));
+
+  const start = new Date().getTime();
+  let startSuccess = new Date().getTime();
+
   let response = http.post(ENDPOINT, { entry: uuidv4() });
   let i = 1;
   while (response.status !== 201) {
     // console.log(__VU, "Status", status, "- retrying in 5s..");
     sleep(5);
+    startSuccess = new Date().getTime();
     response = http.post(ENDPOINT, { entry: uuidv4() });
     i++;
   }
+  const end = new Date().getTime();
 
   const responseTimeMicrosec = response.headers["X-Response-Time-Microsec"];
   console.log(
@@ -50,6 +57,7 @@ export default function (data) {
   );
 
   noOfLoadsTrend.add(i);
+  completionTime.add(end - start, { start, startSuccess, end, vu: __VU });
 }
 
 export function teardown(data) {
