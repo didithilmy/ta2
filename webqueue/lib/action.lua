@@ -103,6 +103,6 @@ core.register_action("webqueue_http_response", {'http-res', 'tcp-res'}, function
         local exit_tstamp_num = exit_tstamp
         local backend_delay_microseconds = exit_tstamp_num - start_tstamp_num
         table.insert(webqueue_recorded_response_times, backend_delay_microseconds)
-        -- txn.http:res_add_header('X-Response-Time-Microsec', backend_delay_microseconds)
+        txn.http:res_add_header('X-Response-Time-Microsec', backend_delay_microseconds)
     end
 end, 0)

@@ -1,12 +1,12 @@
 local stats = require "utils.stats"
 local random = require "utils.random"
 
-local TICK_DURATION_MS = 1000
-local RESPONSE_TIME_THRESHOLD_MS = 500
+local TICK_DURATION_MS = 200
+local RESPONSE_TIME_THRESHOLD_MS = 2000
 local CONSEQUENT_ABOVE_THRESHOLD_ENABLE_QUEUEING = 2
-local CONSEQUENT_BELOW_THRESHOLD_ADMIT_NEW = 10
+local CONSEQUENT_BELOW_THRESHOLD_ADMIT_NEW = 5
 local CONSEQUENT_BELOW_THRESHOLD_DISABLE_QUEUEING = 20
-local ADMITTANCE_INCREMENT = 30
+local ADMITTANCE_INCREMENT = 150
 
 local function calc_average(arr_response_time)
     local sum, n = 0, 0
@@ -28,15 +28,16 @@ local function enableQueueing()
     local secret = random.generateRandomSecret(32)
     webqueue_jwt_signing_secret = secret
     webqueue_queueing_mode_enabled = true
-    core.Info("Queueing enabled, secret=" .. secret)
+    core.Info("[!] Queueing enabled, secret=" .. secret)
 end
 
 local function disableQueueing()
     webqueue_queueing_mode_enabled = false
-    core.Info("Queueing disabled")
+    core.Info("[!] Queueing disabled")
 end
 
 local function admitNewSessions()
+    core.Debug("[!] Admitting" .. ADMITTANCE_INCREMENT .. " new sessions")
     webqueue_max_allowed_queue_no = webqueue_max_allowed_queue_no + ADMITTANCE_INCREMENT
 end
 
