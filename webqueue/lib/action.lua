@@ -58,7 +58,7 @@ core.register_action("webqueue_token_issuer", {'http-res'}, function(txn)
     local actual_session_id = txn:get_var("txn.actual_session_id")
 
     if should_issue_entry == 1 then
-        core.Debug("[!] Issuing entry token")
+        -- core.Debug("[!] Issuing entry token")
         local exp = core.now().sec + WEBQUEUE_ENTRY_TICKET_EXPIRY_SECS
         local payload = {
             typ = "e",
@@ -71,7 +71,7 @@ core.register_action("webqueue_token_issuer", {'http-res'}, function(txn)
 
     local should_issue_queue = txn:get_var("txn.should_issue_queue")
     if should_issue_queue == 1 then
-        core.Debug("[!] Issuing queue token")
+        -- core.Debug("[!] Issuing queue token")
         local queue_no = webqueue_latest_issued_queue_no + 1
         webqueue_latest_issued_queue_no = queue_no
         local payload = {

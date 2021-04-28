@@ -6,7 +6,7 @@ import {
 import { sleep } from "k6";
 import { Trend } from "k6/metrics";
 
-const ENDPOINT = "http://localhost:9000/test-post.php";
+const BASE_URL = "http://localhost:9000";
 
 const noOfLoadsTrend = new Trend("no_of_loads");
 const completionTime = new Trend("completion_time");
@@ -16,48 +16,53 @@ export let options = {
   scenarios: {
     contacts: {
       executor: "per-vu-iterations",
-      vus: 10000,
+      vus: 10,
       iterations: 1,
       maxDuration: "1h30m",
     },
   },
 };
 
-export function setup() {
-  const sessionId = uuidv4();
-
-  let jar = http.cookieJar();
-  jar.set(ENDPOINT, "khongguan", sessionId);
+function requestUntilSuccessful(url, body) {
+  let response = http.post(url, body);
+  let i = 1;
+  while (response.status !== 200) {
+    sleep(5);
+    response = http.post(url, body);
+    i++;
+  }
+  return i;
 }
 
 export default function (data) {
   sleep(randomIntBetween(1, 4));
 
   const start = new Date().getTime();
-  let startSuccess = new Date().getTime();
 
-  let response = http.post(ENDPOINT, { entry: uuidv4() });
-  let i = 1;
-  while (response.status !== 201) {
-    // console.log(__VU, "Status", status, "- retrying in 5s..");
-    sleep(5);
-    startSuccess = new Date().getTime();
-    response = http.post(ENDPOINT, { entry: uuidv4() });
-    i++;
-  }
+  let i = requestUntilSuccessful(BASE_URL + "/login.php", {
+    username: uuidv4(),
+  });
+  // console.log(__VU, "Logged in..");
+
+  i += requestUntilSuccessful(BASE_URL + "/listMK.php");
+  // console.log(__VU, "Listing MK...");
+
+  i += requestUntilSuccessful(BASE_URL + "/takeMK.php", { kode_mk: "II3220" });
+  // console.log(__VU, "Taking MK..");
+
   const end = new Date().getTime();
 
-  const responseTimeMicrosec = response.headers["X-Response-Time-Microsec"];
   console.log(
     __VU,
     "Successful request after",
     i,
-    "loads, response time in microsec:",
-    responseTimeMicrosec
+    "loads and",
+    end - start,
+    "ms"
   );
 
   noOfLoadsTrend.add(i);
-  completionTime.add(end - start, { start, startSuccess, end, vu: __VU });
+  completionTime.add(end - start, { start, end, vu: __VU });
 }
 
 export function teardown(data) {

@@ -1,12 +1,12 @@
 local stats = require "utils.stats"
 local random = require "utils.random"
 
-local TICK_DURATION_MS = 200
-local RESPONSE_TIME_THRESHOLD_MS = 2000
-local CONSEQUENT_ABOVE_THRESHOLD_ENABLE_QUEUEING = 2
+local TICK_DURATION_MS = 100
+local RESPONSE_TIME_THRESHOLD_MS = 1000
+local CONSEQUENT_ABOVE_THRESHOLD_ENABLE_QUEUEING = 10
 local CONSEQUENT_BELOW_THRESHOLD_ADMIT_NEW = 5
 local CONSEQUENT_BELOW_THRESHOLD_DISABLE_QUEUEING = 20
-local ADMITTANCE_INCREMENT = 150
+local ADMITTANCE_INCREMENT = 200
 
 local function calc_average(arr_response_time)
     local sum, n = 0, 0
@@ -37,7 +37,7 @@ local function disableQueueing()
 end
 
 local function admitNewSessions()
-    core.Debug("[!] Admitting" .. ADMITTANCE_INCREMENT .. " new sessions")
+    core.Debug("[!] Admitting " .. ADMITTANCE_INCREMENT .. " new sessions")
     webqueue_max_allowed_queue_no = webqueue_max_allowed_queue_no + ADMITTANCE_INCREMENT
 end
 
@@ -79,8 +79,8 @@ local function monitoring_daemon()
 
         evaluate_threshold()
 
-        core.Info('Sessions: ' .. no_of_sessions .. ', Average response time: ' .. average .. ', Median: ' .. median ..
-                      ', Q3: ' .. q3 .. ', Max: ' .. max .. ', Min: ' .. min)
+        -- core.Info('Sessions: ' .. no_of_sessions .. ', Average response time: ' .. average .. ', Median: ' .. median ..
+        --               ', Q3: ' .. q3 .. ', Max: ' .. max .. ', Min: ' .. min)
     end
 end
 
