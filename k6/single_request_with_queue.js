@@ -33,20 +33,6 @@ export function setup() {
   jar.set(ENDPOINT, "khongguan", sessionId);
 }
 
-function recordQueueingToken(token) {
-  const { typ, qno } = decode(token);
-  if (typ === "q") {
-    issuedQueueNo.add(qno, { vu: __VU });
-  }
-}
-
-function recordCalculatedResponseTime(response) {
-  const responseTimeMicrosec =
-    response.headers["X-Response-Time-Microsec"] / 1000;
-  if (responseTimeMicrosec)
-    calculatedResponseTime.add(responseTimeMicrosec, { vu: __VU });
-}
-
 function recordMetrics(response) {
   const responseTimeMicrosec =
     response.headers["X-Response-Time-Microsec"] / 1000;
