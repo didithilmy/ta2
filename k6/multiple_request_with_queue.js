@@ -5,11 +5,14 @@ import {
 } from "https://jslib.k6.io/k6-utils/1.0.0/index.js";
 import { sleep } from "k6";
 import { Trend } from "k6/metrics";
+import { decode } from "./jwt.js";
 
 const BASE_URL = "http://localhost:9000";
 
 const noOfLoadsTrend = new Trend("no_of_loads");
-const completionTime = new Trend("completion_time");
+const completionTime = new Trend("completion_time", true);
+const issuedQueueNo = new Trend("issued_queue_no");
+const calculatedResponseTime = new Trend("calculated_response_time", true);
 
 export let options = {
   discardResponseBodies: true,
@@ -23,12 +26,31 @@ export let options = {
   },
 };
 
+function recordMetrics(response) {
+  const responseTimeMicrosec =
+    response.headers["X-Response-Time-Microsec"] / 1000;
+
+  if (responseTimeMicrosec)
+    calculatedResponseTime.add(responseTimeMicrosec, { vu: __VU });
+
+  if (response.cookies.webqueue_ticket) {
+    const token = response.cookies.webqueue_ticket[0].value;
+    const { typ, qno } = decode(token);
+    if (typ === "q") {
+      issuedQueueNo.add(qno, { vu: __VU });
+    }
+  }
+}
+
 function requestUntilSuccessful(url, body) {
   let response = http.post(url, body);
+  recordMetrics(response);
+
   let i = 1;
   while (response.status !== 200) {
     sleep(5);
     response = http.post(url, body);
+    recordMetrics(response);
     i++;
   }
   return i;
@@ -61,7 +83,7 @@ export default function (data) {
     "ms"
   );
 
-  noOfLoadsTrend.add(i);
+  noOfLoadsTrend.add(i, { vu: __VU });
   completionTime.add(end - start, { start, end, vu: __VU });
 }
 
