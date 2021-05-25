@@ -38,7 +38,7 @@ function recordMetrics(response) {
     response.headers["X-Response-Time-Microsec"] / 1000;
 
   if (responseTimeMicrosec)
-    calculatedResponseTime.add(responseTimeMicrosec, { vu: __VU });
+    calculatedResponseTime.add(responseTimeMicrosec, { status: response.status, vu: __VU });
 
   if (response.cookies.webqueue_ticket) {
     const token = response.cookies.webqueue_ticket[0].value;
@@ -69,14 +69,14 @@ export default function (data) {
   }
   const end = new Date().getTime();
 
-  const responseTimeMicrosec = response.headers["X-Response-Time-Microsec"];
-  console.log(
-    __VU,
-    "Successful request after",
-    i,
-    "loads, response time in microsec:",
-    responseTimeMicrosec
-  );
+  // const responseTimeMicrosec = response.headers["X-Response-Time-Microsec"];
+  // console.log(
+  //   __VU,
+  //   "Successful request after",
+  //   i,
+  //   "loads, response time in microsec:",
+  //   responseTimeMicrosec
+  // );
 
   noOfLoadsTrend.add(i, { vu: __VU });
   completionTime.add(end - start, { start, startSuccess, end, vu: __VU });
