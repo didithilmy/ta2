@@ -5,6 +5,7 @@ import {
 } from "https://jslib.k6.io/k6-utils/1.0.0/index.js";
 import { sleep } from "k6";
 import { Trend } from "k6/metrics";
+import { decode } from "./jwt.js";
 
 const BASE_URL = "http://localhost:9001";
 
